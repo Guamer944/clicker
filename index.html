@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clicker Game</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(to bottom, #5F9EA0, #4682B4);
+      font-family: 'Roboto', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #clicker-game {
+      text-align: center;
+      position: relative;
+      z-index: 10;
+    }
+
+    #counter {
+      position: absolute;
+      top: -120px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 40px;
+      color: white;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+    }
+
+    #click-btn, #shop-btn, .shop-item button, .close-shop, #credits-btn {
+      font-family: 'Press Start 2P', cursive;
+      text-transform: uppercase;
+    }
+
+    #click-btn {
+      width: 180px;
+      height: 180px;
+      font-size: 18px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ff6347, #ff4500);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+      position: relative;
+      border: 2px solid black;
+    }
+
+    #click-btn:hover {
+      transform: scale(1.1);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(145deg, #ff4500, #ff6347);
+    }
+
+    @keyframes shrink {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(0.85);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    #click-btn.clicked {
+      animation: shrink 0.1s ease-in-out;
+    }
+
+    #shop-btn, #credits-btn {
+      width: 180px;
+      height: 50px;
+      font-size: 16px;
+      border-radius: 25px;
+      background: linear-gradient(145deg, #4CAF50, #388E3C);
+      color: white;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+      margin-top: 20px;
+      border: 2px solid black;
+    }
+
+    #shop-btn:hover, #credits-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+      background: linear-gradient(145deg, #388E3C, #4CAF50);
+    }
+
+    #credits-btn {
+      position: absolute;
+      top: 510px;
+      left: -850px;
+      z-index: 15;
+    }
+
+    #shop-modal, #credits-modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #d3d3d3;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      z-index: 20;
+    }
+
+    #shop-modal h2, #credits-modal h2 {
+      margin-bottom: 20px;
+      font-size: 20px;
+      color: #333;
+    }
+
+    .shop-item {
+      margin: 15px 0;
+      position: relative;
+    }
+
+    .shop-item button {
+      padding: 10px 20px;
+      font-size: 14px;
+      background-color: #4CAF50;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .shop-item button:hover {
+      background-color: #388E3C;
+    }
+
+    .sold-out {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      font-size: 20px;
+      font-weight: bold;
+      color: red;
+      text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+      opacity: 0.8;
+    }
+
+    .blurred {
+      filter: blur(4px);
+      pointer-events: none;
+    }
+
+    .close-shop, .close-credits {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 14px;
+      background-color: #ff6347;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .close-shop:hover, .close-credits:hover {
+      background-color: #ff4500;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 16px;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .notification.show {
+      opacity: 1;
+      visibility: visible;
+      animation: slideIn 0.5s forwards;
+    }
+
+    @keyframes slideIn {
+      0% { transform: translateX(-50%) translateY(-20px); }
+      100% { transform: translateX(-50%) translateY(0); }
+    }
+
+    .notification.red {
+      background-color: rgba(255, 0, 0, 0.7);
+    }
+
+    .notification.green {
+      background-color: rgba(0, 128, 0, 0.7);
+    }
+
+    .falling-ball {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: white;
+      filter: blur(4px);
+      animation: fall 4s infinite;
+    }
+
+    @keyframes fall {
+      0% {
+        top: -50px;
+        left: calc(100% * var(--random-x));
+      }
+      100% {
+        top: 100vh;
+        left: calc(100% * var(--random-x));
+      }
+    }
+
+    .falling-ball:nth-child(odd) {
+      animation-duration: 4s;
+    }
+
+    .falling-ball:nth-child(even) {
+      animation-duration: 5s;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="clicker-game">
+    <div id="counter">Clicks: 0</div>
+    <button id="click-btn">CLICK ME PLEASEEE</button>
+    <button id="shop-btn">SHOP</button>
+    <button id="credits-btn">CREDITS</button>
+  </div>
+
+  <!-- Shop Modal -->
+  <div id="shop-modal">
+    <h2>Welcome to the Shop!</h2>
+    <div class="shop-item">
+      <button id="upgrade-btn">Buy Upgrade: +1 click/s (<span id="upgrade-price">10</span> clicks)</button>
+    </div>
+    <div class="shop-item">
+      <button id="upgrade2-btn">Buy 1.5x Per Click Multiplier (300 clicks)</button>
+    </div>
+    <div class="shop-item cat-upgrade-container">
+      <img src="" alt="">
+      <button id="cat-upgrade-btn">Buy Cat Upgrade: +4 clicks per click (1000 clicks)</button>
+    </div>
+    <div class="shop-item class-upgrade-container">
+      <img src="" alt="">
+      <button id="class-upgrade-btn">Buy The Class: +8 clicks per click (5000 clicks)</button>
+    </div>
+    <button class="close-shop" id="close-shop">Close</button>
+  </div>
+
+  <!-- Credits Modal -->
+  <div id="credits-modal">
+    <h2>Credits</h2>
+    <p>Creator: Fernando</p>
+    <p>Ideas: Victor</p>
+    <p>Help: Daniel (AKA my Dad)</p>
+    <button class="close-credits" id="close-credits">Close</button>
+  </div>
+
+  <div class="notification" id="notification"></div>
+
+  <script>
+    const clickButton = document.getElementById("click-btn");
+    const shopButton = document.getElementById("shop-btn");
+    const creditsButton = document.getElementById("credits-btn");
+    const shopModal = document.getElementById("shop-modal");
+    const creditsModal = document.getElementById("credits-modal");
+    const closeShopButton = document.getElementById("close-shop");
+    const closeCreditsButton = document.getElementById("close-credits");
+    const notification = document.getElementById("notification");
+    const counterElement = document.getElementById("counter");
+    const upgradeButton = document.getElementById("upgrade-btn");
+    const upgradePriceElement = document.getElementById("upgrade-price");
+    const catUpgradeButton = document.getElementById("cat-upgrade-btn");
+    const classUpgradeButton = document.getElementById("class-upgrade-btn");
+
+    let clicks = parseInt(localStorage.getItem('clicks')) || 0;
+    let clickMultiplier = parseFloat(localStorage.getItem('clickMultiplier')) || 1;
+    let upgradePrice = parseFloat(localStorage.getItem('upgradePrice')) || 10;
+    let catUpgradeBought = JSON.parse(localStorage.getItem('catUpgradeBought')) || false;
+    let classUpgradeBought = JSON.parse(localStorage.getItem('classUpgradeBought')) || false;
+
+    function updateCounter() {
+      counterElement.textContent = `Clicks: ${clicks}`;
+      localStorage.setItem('clicks', clicks);
+    }
+
+    function updateUpgradePrice() {
+      upgradePriceElement.textContent = Math.floor(upgradePrice);
+      localStorage.setItem('upgradePrice', upgradePrice);
+    }
+
+    clickButton.addEventListener("click", function () {
+      clicks += clickMultiplier;
+      updateCounter();
+      showNotification(`+${clickMultiplier} Clicks gained`, "green");
+      clickButton.classList.add('clicked');
+      setTimeout(() => clickButton.classList.remove('clicked'), 100);
+    });
+
+    upgradeButton.addEventListener("click", function () {
+      if (clicks >= upgradePrice) {
+        clicks -= upgradePrice;
+        clickMultiplier += 1;
+        upgradePrice *= 1.35;
+        updateCounter();
+        updateUpgradePrice();
+        showNotification(`+1 Click per second Upgrade bought!`, "green");
+      } else {
+        showNotification(`Not enough clicks!`, "red");
+      }
+    });
+
+    catUpgradeButton.addEventListener("click", function () {
+      if (clicks >= 1000 && !catUpgradeBought) {
+        clicks -= 1000;
+        clickMultiplier += 4;
+        catUpgradeBought = true;
+        localStorage.setItem('catUpgradeBought', JSON.stringify(true));
+        showNotification(`+4 Clicks per click Upgrade bought!`, "green");
+        catUpgradeButton.setAttribute('disabled', 'true');
+        catUpgradeButton.classList.add('blurred');
+        catUpgradeButton.innerText = "SOLD OUT";
+      } else {
+        showNotification(`Not enough clicks or already bought!`, "red");
+      }
+    });
+
+    classUpgradeButton.addEventListener("click", function () {
+      if (clicks >= 5000 && !classUpgradeBought) {
+        clicks -= 5000;
+        clickMultiplier += 8;
+        classUpgradeBought = true;
+        localStorage.setItem('classUpgradeBought', JSON.stringify(true));
+        showNotification(`+8 Clicks per click Upgrade bought!`, "green");
+        classUpgradeButton.setAttribute('disabled', 'true');
+        classUpgradeButton.classList.add('blurred');
+        classUpgradeButton.innerText = "SOLD OUT";
+      } else {
+        showNotification(`Not enough clicks or already bought!`, "red");
+      }
+    });
+
+    function showNotification(message, type) {
+      notification.textContent = message;
+      notification.classList.add("show");
+      notification.classList.remove("red", "green");
+      notification.classList.add(type);
+      setTimeout(() => {
+        notification.classList.remove("show");
+      }, 3000);
+    }
+
+    shopButton.addEventListener("click", function () {
+      shopModal.style.display = "block";
+    });
+
+    closeShopButton.addEventListener("click", function () {
+      shopModal.style.display = "none";
+    });
+
+    creditsButton.addEventListener("click", function () {
+      creditsModal.style.display = "block";
+    });
+
+    closeCreditsButton.addEventListener("click", function () {
+      creditsModal.style.display = "none";
+    });
+
+    // Initialize Shop Prices
+    updateUpgradePrice();
+  </script>
+</body>
+</html>
